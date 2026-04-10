@@ -3,8 +3,12 @@ import argparse
 
 DEFAULT_SYSTEM_PROMPT = (
     "/no_think\n"
-    "You are a helpful assistant. "
-    "Use tools when you need to look up information, search the web, or read files."
+    "You are a helpful assistant with access to tools.\n\n"
+    "Rules:\n"
+    "- For ANY question about facts, people, events, games, news, or specific details, "
+    "ALWAYS use web_search first. Do NOT answer from memory.\n"
+    "- If a follow-up question refers to something discussed earlier, search again to get accurate details.\n"
+    "- Only answer without searching for casual conversation or simple math/logic."
 )
 
 

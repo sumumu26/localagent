@@ -1,7 +1,7 @@
 from agent.registry import register
 
 try:
-    from duckduckgo_search import DDGS
+    from ddgs import DDGS
     _DDGS_AVAILABLE = True
 except ImportError:
     _DDGS_AVAILABLE = False
@@ -11,14 +11,15 @@ except ImportError:
     "name": "web_search",
     "description": (
         "Search the web using DuckDuckGo. "
-        "Returns titles, URLs, and snippets from search results."
+        "Returns titles, URLs, and snippets from search results. "
+        "Try both Japanese and English queries if the first search returns no results."
     ),
     "parameters": {
         "type": "object",
         "properties": {
             "query": {
                 "type": "string",
-                "description": "The search query",
+                "description": "The search query. Use specific keywords for better results.",
             },
             "max_results": {
                 "type": "integer",
@@ -30,7 +31,7 @@ except ImportError:
 })
 def web_search(query: str, max_results: int = 5) -> str:
     if not _DDGS_AVAILABLE:
-        return "Error: duckduckgo-search is not installed. Run: pip install duckduckgo-search"
+        return "Error: ddgs is not installed. Run: pip install ddgs"
 
     try:
         results = DDGS().text(query, max_results=max_results)

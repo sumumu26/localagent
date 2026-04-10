@@ -1,12 +1,12 @@
 import json
-from agent import registry
+import re
+from agent import registry, tool_calling
 from agent.llm import chat_completion
 from config import Config
 
 try:
     from rich.console import Console
     from rich.panel import Panel
-    from rich.text import Text
     _console = Console()
     _USE_RICH = True
 except ImportError:
@@ -18,45 +18,49 @@ def run_loop(llm, messages: list, cfg: Config) -> str:
     Runs the ReAct loop. Mutates `messages` in place.
     Returns the final text response.
     """
-    tools = registry.get_tool_definitions()
-
     for iteration in range(cfg.max_iterations):
-        response = chat_completion(llm, messages, tools, cfg)
+        # tools=None: tool definitions are already embedded in the system prompt
+        response = chat_completion(llm, messages, tools=None, cfg=cfg)
 
         msg = response["choices"][0]["message"]
-        tool_calls = msg.get("tool_calls")
+        content = _strip_thinking(msg.get("content") or "")
 
-        # Assistant message MUST be appended before tool result messages
+        messages.append({"role": "assistant", "content": content})
+
+        # Parse <tool_call> blocks from the model's text output
+        calls = tool_calling.extract_tool_calls(content)
+
+        if not calls:
+            # No tool calls → final answer
+            return tool_calling.strip_tool_calls(content)
+
+        # Execute all tool calls and collect results
+        results = []
+        for tc in calls:
+            name = tc.get("name", "")
+            args = tc.get("arguments", {})
+            args_json = json.dumps(args, ensure_ascii=False)
+
+            _print_tool_call(name, args_json)
+            result = registry.dispatch(name, args_json)
+            _print_tool_result(name, result)
+
+            results.append(tool_calling.format_tool_result(name, result))
+
         messages.append({
-            "role": "assistant",
-            "content": msg.get("content"),
-            "tool_calls": tool_calls,
+            "role": "user",
+            "content": "\n".join(results),
         })
-
-        if not tool_calls:
-            return msg.get("content") or ""
-
-        # Execute all tool calls (models like Llama 3.1 can request multiple at once)
-        for tc in tool_calls:
-            call_id = tc["id"]
-            fn_name = tc["function"]["name"]
-            fn_args = tc["function"].get("arguments", "{}")
-
-            _print_tool_call(fn_name, fn_args)
-            result = registry.dispatch(fn_name, fn_args)
-            _print_tool_result(fn_name, result)
-
-            messages.append({
-                "role": "tool",
-                "tool_call_id": call_id,
-                "name": fn_name,
-                "content": result,
-            })
 
     return (
         f"[Agent stopped after {cfg.max_iterations} iterations. "
         "The last tool results are in the conversation history.]"
     )
+
+
+def _strip_thinking(text: str) -> str:
+    """Remove <think>...</think> blocks from Qwen3.5 thinking mode output."""
+    return re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
 
 
 def _print_tool_call(name: str, args_json: str) -> None:

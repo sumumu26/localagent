@@ -2,6 +2,7 @@ import sys
 from config import parse_args
 from agent.llm import load_model
 from agent.loop import run_loop
+from agent import registry, tool_calling
 import agent.tools  # noqa: F401 — triggers all @register decorators
 
 try:
@@ -28,7 +29,11 @@ def main() -> None:
     else:
         print("Model loaded. Type 'exit' or Ctrl-C to quit.\n")
 
-    messages = [{"role": "system", "content": cfg.system_prompt}]
+    # Embed tool definitions into the system prompt
+    system_content = tool_calling.build_system_prompt(
+        cfg.system_prompt, registry.get_tool_definitions()
+    )
+    messages = [{"role": "system", "content": system_content}]
 
     try:
         while True:
