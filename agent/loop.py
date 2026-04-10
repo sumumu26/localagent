@@ -1,6 +1,7 @@
 import json
 import re
-from agent import registry, tool_calling
+from agent import registry
+from agent.tool_calling import get_adapter
 from agent.llm import chat_completion
 from config import Config
 
@@ -18,6 +19,8 @@ def run_loop(llm, messages: list, cfg: Config) -> str:
     Runs the ReAct loop. Mutates `messages` in place.
     Returns the final text response.
     """
+    adapter = get_adapter(cfg.chat_format)
+
     for iteration in range(cfg.max_iterations):
         # tools=None: tool definitions are already embedded in the system prompt
         response = chat_completion(llm, messages, tools=None, cfg=cfg)
@@ -27,12 +30,11 @@ def run_loop(llm, messages: list, cfg: Config) -> str:
 
         messages.append({"role": "assistant", "content": content})
 
-        # Parse <tool_call> blocks from the model's text output
-        calls = tool_calling.extract_tool_calls(content)
+        calls = adapter.extract_tool_calls(content)
 
         if not calls:
             # No tool calls → final answer
-            return tool_calling.strip_tool_calls(content)
+            return adapter.strip_tool_calls(content)
 
         # Execute all tool calls and collect results
         results = []
@@ -45,7 +47,7 @@ def run_loop(llm, messages: list, cfg: Config) -> str:
             result = registry.dispatch(name, args_json)
             _print_tool_result(name, result)
 
-            results.append(tool_calling.format_tool_result(name, result))
+            results.append(adapter.format_tool_result(name, result))
 
         messages.append({
             "role": "user",
