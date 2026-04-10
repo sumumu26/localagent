@@ -11,7 +11,7 @@ DEFAULT_SYSTEM_PROMPT = (
 @dataclass
 class Config:
     model_path: str
-    chat_format: str = "auto"
+    chat_format: str = "chatml"
     n_ctx: int = 8192
     n_gpu_layers: int = -1
     temperature: float = 0.0
@@ -26,8 +26,8 @@ def parse_args() -> Config:
     p.add_argument("--model", required=True, help="Path to GGUF model file")
     p.add_argument(
         "--chat-format",
-        default="auto",
-        help="llama-cpp chat format (auto=detect from GGUF, or llama-3, chatml, qwen, ...)",
+        default="chatml",
+        help="llama-cpp chat format (chatml=Qwen3.5推奨, auto=GGUFから検出, llama-3, qwen, ...)",
     )
     p.add_argument("--n-ctx", type=int, default=8192)
     p.add_argument("--n-gpu-layers", type=int, default=-1,
