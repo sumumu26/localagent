@@ -61,8 +61,12 @@ def run_loop(llm, messages: list, cfg: Config) -> str:
 
 
 def _strip_thinking(text: str) -> str:
-    """Remove <think>...</think> blocks from Qwen3.5 thinking mode output."""
-    return re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
+    """モデルごとの thinking ブロックを除去する。"""
+    # Qwen3.5: <think>...</think>
+    text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL)
+    # Gemma 4: <|channel>thought ... <channel|>
+    text = re.sub(r"<\|channel>thought.*?<channel\|>", "", text, flags=re.DOTALL)
+    return text.strip()
 
 
 def _print_tool_call(name: str, args_json: str) -> None:

@@ -84,11 +84,17 @@ python main.py --model /path/to/model.gguf
 ### 実行例
 
 ```bash
-# Qwen3.5-9B Q4_K_M（推奨）
+# Qwen3.5-9B Q4_K_M
 python main.py \
   --model ~/models/Qwen3.5-9B-Q4_K_M.gguf \
   --n-ctx 8192 \
   --n-gpu-layers -1
+
+# Gemma 4 26B-A4B Q4_K_M
+python main.py \
+  --model ~/models/gemma-4-26B-A4B-it-UD-Q4_K_M.gguf \
+  --chat-format gemma \
+  --system-prompt "You are a helpful assistant. For ANY question about facts, people, games, or news, ALWAYS use web_search first. Never answer from memory."
 
 # CPUのみ
 python main.py \
@@ -96,7 +102,9 @@ python main.py \
   --n-gpu-layers 0
 ```
 
-> **Qwen3.5 の注意点**: thinking mode を持つため、デフォルトのシステムプロンプトに `/no_think` を付与しています。tool calling の安定性のためそのままの使用を推奨します。他のモデルを使う場合は `--system-prompt` で上書きしてください。
+> **モデル別の注意点**
+> - **Qwen3.5**: thinking mode を持つためデフォルトのシステムプロンプトに `/no_think` を付与。`--chat-format chatml`（デフォルト）で動作。
+> - **Gemma 4**: `/no_think` は不要。`--chat-format gemma` を指定し、`--system-prompt` でシステムプロンプトを上書きする。
 
 起動後はターミナルで対話できます。`exit` または Ctrl-C で終了。
 
@@ -155,7 +163,7 @@ llama-cpp-pythonのネイティブtool calling（JSON形式）ではなく、Qwe
 </tool_response>
 ```
 
-ツール定義はシステムプロンプトに埋め込まれるため、`chatml` フォーマットでも確実に動作します。
+ツール定義はシステムプロンプトに埋め込まれるため、`chatml` / `gemma` どちらのフォーマットでも確実に動作します。モデルの出力フォーマットはアダプタが吸収します。
 
 ## プロジェクト構成
 
@@ -168,7 +176,10 @@ local_agent/
     ├── llm.py               # llama-cpp-pythonラッパー（サロゲート修正含む）
     ├── registry.py          # ツールレジストリ（register/dispatch）
     ├── loop.py              # ReActループ本体
-    ├── tool_calling.py      # <tool_call>テキストパース・システムプロンプト生成
+    ├── tool_calling/        # モデル別ツール呼び出しアダプタ
+    │   ├── base.py          # 抽象基底クラス
+    │   ├── qwen.py          # Qwen3.5用 <tool_call> 形式
+    │   └── gemma.py         # Gemma 4用 <|tool_call|> 形式
     └── tools/
         ├── __init__.py      # ツール登録トリガー
         ├── web_search.py
@@ -182,8 +193,9 @@ tool callingに対応したモデルであれば動作します。
 
 | モデル | GGUF配布元 | 備考 |
 |---|---|---|
-| **Qwen3.5-9B-Instruct Q4_K_M**（推奨） | [unsloth/Qwen3.5-9B-GGUF](https://huggingface.co/unsloth/Qwen3.5-9B-GGUF) | VRAM 約8GB |
-| Qwen3.5-4B-Instruct Q4_K_M | [unsloth/Qwen3.5-4B-GGUF](https://huggingface.co/unsloth/Qwen3.5-4B-GGUF) | VRAM 約4GB、軽量優先の場合 |
+| **Qwen3.5-9B Q4_K_M** | [unsloth/Qwen3.5-9B-GGUF](https://huggingface.co/unsloth/Qwen3.5-9B-GGUF) | `chatml` / VRAM 約8GB |
+| Qwen3.5-4B Q4_K_M | [unsloth/Qwen3.5-4B-GGUF](https://huggingface.co/unsloth/Qwen3.5-4B-GGUF) | `chatml` / VRAM 約4GB |
+| **Gemma 4 26B-A4B Q4_K_M** | [unsloth/gemma-4-26B-A4B-it-GGUF](https://huggingface.co/unsloth/gemma-4-26B-A4B-it-GGUF) | `gemma` / VRAM 約16GB |
 
 ## ライセンス
 

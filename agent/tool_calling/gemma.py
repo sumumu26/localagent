@@ -6,16 +6,18 @@ from agent.tool_calling.base import ToolCallingAdapter
 # 出力は <|tool_call|>...<|/tool_call|> ネイティブトークン形式
 _TOOL_INSTRUCTIONS = """\
 
-You have access to the following tools. Use them to answer questions accurately.
+You have access to these tools:
 
 {tools_json}
 
-To call a tool, output ONLY this format (no other text before the closing tag):
+IMPORTANT RULES:
+- For ANY question about facts, people, games, news, or specific details: ALWAYS call a tool first. NEVER answer from memory.
+- To call a tool, output exactly:
 <|tool_call|>
 {{"name": "tool_name", "arguments": {{"param": "value"}}}}
 <|/tool_call|>
-
-You may call multiple tools sequentially. After receiving results, give your final answer."""
+- Wait for the tool result before answering.
+- If a search returns no results, try a different query (e.g. English instead of Japanese)."""
 
 
 class GemmaAdapter(ToolCallingAdapter):
