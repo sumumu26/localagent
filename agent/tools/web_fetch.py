@@ -2,7 +2,8 @@ import urllib.request
 import urllib.error
 from agent.registry import register
 
-MAX_FETCH_BYTES = 32_768  # 32 KB hard cap to protect context window
+DEFAULT_FETCH_BYTES = 32_768   # 32 KB
+MAX_FETCH_BYTES = 4_194_304    # 4 MB hard cap
 
 try:
     from html.parser import HTMLParser
@@ -44,7 +45,7 @@ except ImportError:
         "Fetch the content of a URL and return its text. "
         "Use this when you already have a URL and want to read the page. "
         "HTML pages are converted to plain text. "
-        "Content is truncated at 32 KB."
+        f"Default limit is {DEFAULT_FETCH_BYTES // 1024} KB; specify max_bytes (up to {MAX_FETCH_BYTES // 1024 // 1024} MB) for larger pages."
     ),
     "parameters": {
         "type": "object",
@@ -53,19 +54,29 @@ except ImportError:
                 "type": "string",
                 "description": "The URL to fetch",
             },
+            "max_bytes": {
+                "type": "integer",
+                "description": (
+                    f"Maximum bytes to read (default {DEFAULT_FETCH_BYTES // 1024} KB, "
+                    f"max {MAX_FETCH_BYTES // 1024 // 1024} MB). "
+                    "Increase for large pages."
+                ),
+            },
         },
         "required": ["url"],
     },
 })
-def web_fetch(url: str) -> str:
+def web_fetch(url: str, max_bytes: int = DEFAULT_FETCH_BYTES) -> str:
+    limit = min(max(1, max_bytes), MAX_FETCH_BYTES)
+
     try:
         req = urllib.request.Request(
             url,
             headers={"User-Agent": "Mozilla/5.0 (compatible; hakobune-agent/1.0)"},
         )
-        with urllib.request.urlopen(req, timeout=15) as resp:
+        with urllib.request.urlopen(req, timeout=30) as resp:
             content_type = resp.headers.get_content_type() or ""
-            raw = resp.read(MAX_FETCH_BYTES)
+            raw = resp.read(limit)
     except urllib.error.HTTPError as e:
         return f"HTTP error {e.code}: {e.reason}"
     except urllib.error.URLError as e:
@@ -78,7 +89,7 @@ def web_fetch(url: str) -> str:
     if "html" in content_type and _HTML_PARSER_AVAILABLE:
         text = _extract_text(text)
 
-    if len(raw) >= MAX_FETCH_BYTES:
-        text += f"\n\n[... truncated at {MAX_FETCH_BYTES} bytes ...]"
+    if len(raw) >= limit:
+        text += f"\n\n[... truncated at {limit:,} bytes ...]"
 
     return text
