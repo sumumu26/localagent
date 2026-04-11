@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "web_search(*)",
+      "web_fetch(*)",
+      "file_glob(*)",
+      "file_read(*)",
+      "file_write(src/*)",
+      "file_write(workspace/*)",
+      "file_search(*)",
+      "python_exec(*)"
+    ],
+    "deny": [
+      "python_exec(*import subprocess*)",
+      "python_exec(*import os*)",
+      "python_exec(*__import__*)",
+      "file_write(/etc/*)",
+      "file_write(/usr/*)",
+      "file_write(~/*)"
+    ]
+  }
+}

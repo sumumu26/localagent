@@ -23,6 +23,7 @@ class Config:
     max_iterations: int = 10
     verbose: bool = False
     system_prompt: str = DEFAULT_SYSTEM_PROMPT
+    settings_path: str = "settings.json"
 
 
 def parse_args() -> Config:
@@ -44,6 +45,8 @@ def parse_args() -> Config:
                    help="Enable llama-cpp-python verbose output")
     p.add_argument("--system-prompt", default=None,
                    help="Override the default system prompt")
+    p.add_argument("--settings", default="settings.json",
+                   help="Path to settings.json for permission rules (default: settings.json)")
     args = p.parse_args()
 
     return Config(
@@ -56,4 +59,5 @@ def parse_args() -> Config:
         max_iterations=args.max_iterations,
         verbose=args.verbose,
         system_prompt=args.system_prompt or DEFAULT_SYSTEM_PROMPT,
+        settings_path=args.settings,
     )
