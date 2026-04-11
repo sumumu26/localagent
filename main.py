@@ -4,6 +4,7 @@ from agent.llm import load_model
 from agent.loop import run_loop
 from agent import registry, permissions
 from agent.tool_calling import get_adapter
+from agent.session import load_session, save_session
 import agent.tools  # noqa: F401 — triggers all @register decorators
 
 try:
@@ -53,6 +54,15 @@ def main() -> None:
     )
     messages = [{"role": "system", "content": system_content}]
 
+    if cfg.session_file:
+        restored = load_session(cfg.session_file)
+        if restored:
+            messages.extend(restored)
+            if _USE_RICH:
+                _console.print(f"[bold green]Session restored:[/bold green] {cfg.session_file} ({len(restored)} messages)\n")
+            else:
+                print(f"Session restored: {cfg.session_file} ({len(restored)} messages)\n")
+
     try:
         while True:
             try:
@@ -73,6 +83,9 @@ def main() -> None:
                 _console.print(f"\n[bold green]Assistant:[/bold green] {response}\n")
             else:
                 print(f"\nAssistant: {response}\n")
+
+            if cfg.session_file:
+                save_session(messages, cfg.session_file)
 
     except KeyboardInterrupt:
         print("\nExiting.")

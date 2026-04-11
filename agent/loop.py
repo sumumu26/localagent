@@ -2,7 +2,7 @@ import json
 import re
 from agent import registry
 from agent.tool_calling import get_adapter
-from agent.llm import chat_completion
+from agent.llm import chat_completion, maybe_compress_context
 from config import Config
 
 try:
@@ -22,6 +22,7 @@ def run_loop(llm, messages: list, cfg: Config) -> str:
     adapter = get_adapter(cfg.chat_format)
 
     for iteration in range(cfg.max_iterations):
+        maybe_compress_context(llm, messages, cfg)
         # tools=None: tool definitions are already embedded in the system prompt
         response = chat_completion(llm, messages, tools=None, cfg=cfg)
 

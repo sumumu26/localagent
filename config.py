@@ -21,6 +21,9 @@ class Config:
     temperature: float = 0.0
     max_tokens: int = 1024
     max_iterations: int = 10
+    context_threshold: float = 0.8
+    keep_recent: int = 6
+    session_file: str = ""
     verbose: bool = False
     system_prompt: str = DEFAULT_SYSTEM_PROMPT
     settings_path: str = "settings.json"
@@ -41,6 +44,12 @@ def parse_args() -> Config:
     p.add_argument("--max-tokens", type=int, default=1024)
     p.add_argument("--max-iterations", type=int, default=10,
                    help="Max ReAct loop iterations before giving up")
+    p.add_argument("--context-threshold", type=float, default=0.8,
+                   help="コンテキスト圧縮を開始するトークン使用率 (0.0-1.0, デフォルト: 0.8)")
+    p.add_argument("--keep-recent", type=int, default=6,
+                   help="要約せずに保持する最近のメッセージ数 (デフォルト: 6)")
+    p.add_argument("--session", default="",
+                   help="セッションファイルのパス (.md)。指定すると再開・自動保存が有効になる")
     p.add_argument("--verbose", action="store_true",
                    help="Enable llama-cpp-python verbose output")
     p.add_argument("--system-prompt", default=None,
@@ -57,6 +66,9 @@ def parse_args() -> Config:
         temperature=args.temperature,
         max_tokens=args.max_tokens,
         max_iterations=args.max_iterations,
+        context_threshold=args.context_threshold,
+        keep_recent=args.keep_recent,
+        session_file=args.session,
         verbose=args.verbose,
         system_prompt=args.system_prompt or DEFAULT_SYSTEM_PROMPT,
         settings_path=args.settings,

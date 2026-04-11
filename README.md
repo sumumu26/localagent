@@ -44,6 +44,7 @@ hakobune（箱舟）は、ノアの箱舟に由来します。外部のLLMに依
 - **完全ローカル** — llama-cpp-pythonでGGUFモデルを直接読み込み、外部サーバー不要
 - **ツール呼び出し対応** — Web検索・ファイル操作・Python実行を標準装備
 - **権限管理** — Claude Code互換の `settings.json` でツールのallow/denyを制御
+- **長期セッション対応** — コンテキスト上限に近づくと自動で要約・圧縮。セッションファイルには全履歴を保持し、`session_search` ツールで過去の詳細を正確に検索できる
 - **拡張しやすい** — ツールの追加は1ファイル + 1行のimportだけ
 - **依存最小** — `llama-cpp-python` / `ddgs` / `rich` / `prompt_toolkit` の4つのみ
 
@@ -83,6 +84,9 @@ python main.py --model /path/to/model.gguf
 | `--temperature` | `0.0` | 生成温度 |
 | `--max-tokens` | `1024` | 1回の応答の最大トークン数 |
 | `--max-iterations` | `10` | ReActループの最大反復数 |
+| `--context-threshold` | `0.8` | コンテキスト圧縮を開始するトークン使用率（0.0〜1.0） |
+| `--keep-recent` | `6` | 要約せずに保持する最近のメッセージ数 |
+| `--session` | — | セッションファイルのパス（.md）。指定すると再開・自動保存が有効になる |
 | `--system-prompt` | — | システムプロンプトの上書き |
 | `--settings` | `settings.json` | 権限設定ファイルのパス（存在しない場合は全許可） |
 | `--verbose` | off | llama-cpp-python の詳細ログを表示 |
@@ -106,6 +110,12 @@ python main.py \
 python main.py \
   --model ~/models/Qwen3.5-9B-Q4_K_M.gguf \
   --n-gpu-layers 0
+
+# セッション保存・再開
+python main.py \
+  --model ~/models/Qwen3.5-9B-Q4_K_M.gguf \
+  --session mywork.md
+# 次回同じファイルを指定すると前回の会話から再開
 ```
 
 > **モデル別の注意点**
@@ -232,10 +242,11 @@ hakobune/
 ├── settings.json.example    # 権限設定のサンプル
 ├── requirements.txt
 └── agent/
-    ├── llm.py               # llama-cpp-pythonラッパー（サロゲート修正含む）
+    ├── llm.py               # llama-cpp-pythonラッパー（コンテキスト圧縮含む）
     ├── registry.py          # ツールレジストリ（register/dispatch）+ 権限チェック
     ├── permissions.py       # settings.json 互換の権限チェッカー
     ├── loop.py              # ReActループ本体
+    ├── session.py           # セッション保存・復元（Markdown形式）
     ├── tool_calling/        # モデル別ツール呼び出しアダプタ
     │   ├── base.py          # 抽象基底クラス
     │   ├── qwen.py          # Qwen3.5用 <tool_call> 形式
