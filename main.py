@@ -109,8 +109,10 @@ def main() -> None:
 
     # Embed tool definitions into the system prompt using the model-specific adapter
     adapter = get_adapter(cfg.chat_format)
+    current_dt = datetime.now().strftime("%Y-%m-%d %H:%M")
+    system_prompt = f"Current date and time: {current_dt}\n\n{cfg.system_prompt}"
     system_content = adapter.build_system_prompt(
-        cfg.system_prompt, registry.get_tool_definitions()
+        system_prompt, registry.get_tool_definitions()
     )
     messages = [{"role": "system", "content": system_content}]
 
