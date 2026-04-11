@@ -8,11 +8,26 @@ import agent.tools  # noqa: F401 — triggers all @register decorators
 
 try:
     from rich.console import Console
-    from rich.prompt import Prompt
     _console = Console()
     _USE_RICH = True
 except ImportError:
     _USE_RICH = False
+
+try:
+    from prompt_toolkit import prompt as pt_prompt
+    _USE_PROMPT_TOOLKIT = True
+except ImportError:
+    _USE_PROMPT_TOOLKIT = False
+
+
+def _ask(prompt_str: str) -> str:
+    """Read a line from the user with proper wide-character (CJK) support."""
+    if _USE_PROMPT_TOOLKIT:
+        return pt_prompt(prompt_str)
+    if _USE_RICH:
+        from rich.prompt import Prompt
+        return Prompt.ask(f"[bold blue]{prompt_str.rstrip()}[/bold blue]")
+    return input(prompt_str)
 
 
 def main() -> None:
@@ -40,10 +55,7 @@ def main() -> None:
     try:
         while True:
             try:
-                if _USE_RICH:
-                    user_input = Prompt.ask("[bold blue]You[/bold blue]").strip()
-                else:
-                    user_input = input("You: ").strip()
+                user_input = _ask("You: ").strip()
             except EOFError:
                 break
 
