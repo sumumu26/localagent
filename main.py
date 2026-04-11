@@ -7,7 +7,7 @@ from agent.tool_calling import get_adapter
 from datetime import datetime
 from agent.session import (
     load_session, save_session, new_session_path,
-    list_sessions, get_latest_user_message,
+    list_sessions, get_latest_user_message, set_current_session,
 )
 import agent.tools  # noqa: F401 — triggers all @register decorators
 
@@ -105,13 +105,16 @@ def main() -> None:
     else:
         session_path = new_session_path()
 
-    restored = load_session(session_path)
-    if restored:
-        messages.extend(restored)
+    set_current_session(session_path)
+
+    # history = 圧縮なしの完全な会話履歴（セッションファイルと同期）
+    history = load_session(session_path)
+    if history:
+        messages.extend(history)
         if _USE_RICH:
-            _console.print(f"[bold green]Session restored:[/bold green] {session_path} ({len(restored)} messages)\n")
+            _console.print(f"[bold green]Session restored:[/bold green] {session_path} ({len(history)} messages)\n")
         else:
-            print(f"Session restored: {session_path} ({len(restored)} messages)\n")
+            print(f"Session restored: {session_path} ({len(history)} messages)\n")
     else:
         if _USE_RICH:
             _console.print(f"[dim]Session: {session_path}[/dim]\n")
@@ -130,16 +133,21 @@ def main() -> None:
             if not user_input:
                 continue
 
-            messages.append({"role": "user", "content": user_input})
+            user_msg = {"role": "user", "content": user_input}
+            messages.append(user_msg)
+            history.append(user_msg)
 
+            before_count = len(messages)
             response = run_loop(llm, messages, cfg)
+            # run_loop がmessagesに追加した分（assistant応答・ツール結果）をhistoryに同期
+            history.extend(messages[before_count:])
 
             if _USE_RICH:
                 _console.print(f"\n[bold green]Assistant:[/bold green] {response}\n")
             else:
                 print(f"\nAssistant: {response}\n")
 
-            save_session(messages, session_path)
+            save_session(history, session_path)
 
     except KeyboardInterrupt:
         print("\nExiting.")

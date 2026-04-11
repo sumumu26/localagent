@@ -7,6 +7,17 @@ from agent.llm import _SUMMARY_PREFIX
 _MARKER_RE = re.compile(r"<!-- hakobune:(\w+) -->")
 SESSIONS_DIR = "sessions"
 
+_current_session_path: str = ""
+
+
+def set_current_session(path: str) -> None:
+    global _current_session_path
+    _current_session_path = path
+
+
+def get_current_session() -> str:
+    return _current_session_path
+
 
 def save_session(messages: list, path: str) -> None:
     """

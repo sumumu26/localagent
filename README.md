@@ -137,6 +137,8 @@ python main.py \
 | `file_write` | ファイルにテキストを書き込む。存在しない親ディレクトリも自動作成 |
 | `file_search` | ファイル内容をキーワード・正規表現で横断検索（grep相当）。`filepath:行番号: 内容` 形式で返す |
 | `python_exec` | Pythonコードをサブプロセスで実行して出力を返す。デフォルトタイムアウト30秒 |
+| `session_search` | 現在のセッションの全会話履歴をキーワード検索。コンテキスト圧縮で要約された過去の詳細を取り出せる |
+| `shell` | シェルコマンドを実行。git/grep/pytest/make など外部コマンドを汎用的に呼び出せる。実行前にユーザー確認あり。rm -r など破壊的操作は禁止 |
 
 ## ツールの追加方法
 
@@ -248,7 +250,7 @@ hakobune/
     ├── registry.py          # ツールレジストリ（register/dispatch）+ 権限チェック
     ├── permissions.py       # settings.json 互換の権限チェッカー
     ├── loop.py              # ReActループ本体
-    ├── session.py           # セッション保存・復元・一覧取得（Markdown形式）
+    ├── session.py           # セッション保存・復元・一覧取得（Markdown形式、全履歴保持）
     ├── tool_calling/        # モデル別ツール呼び出しアダプタ
     │   ├── base.py          # 抽象基底クラス
     │   ├── qwen.py          # Qwen3.5用 <tool_call> 形式
@@ -261,7 +263,9 @@ hakobune/
         ├── file_read.py
         ├── file_write.py
         ├── file_search.py
-        └── python_exec.py
+        ├── python_exec.py
+        ├── session_search.py
+        └── shell.py
 ```
 
 ## 動作確認済みモデル
