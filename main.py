@@ -2,7 +2,7 @@ import sys
 from config import parse_args
 from agent.llm import load_model
 from agent.loop import run_loop
-from agent import registry
+from agent import registry, permissions
 from agent.tool_calling import get_adapter
 import agent.tools  # noqa: F401 — triggers all @register decorators
 
@@ -32,6 +32,7 @@ def _ask(prompt_str: str) -> str:
 
 def main() -> None:
     cfg = parse_args()
+    permissions.load(cfg.settings_path)
 
     if _USE_RICH:
         _console.print(f"[bold]Loading model:[/bold] {cfg.model_path}")

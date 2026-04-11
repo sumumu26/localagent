@@ -1,5 +1,6 @@
 import json
 from typing import Callable
+from agent.permissions import check as permission_check, PermissionDenied
 
 _TOOLS: dict[str, dict] = {}
 
@@ -44,6 +45,14 @@ def dispatch(name: str, arguments_json: str) -> str:
         return f"Error: unknown tool '{name}'. Available tools: {list(_TOOLS.keys())}"
     try:
         args = json.loads(arguments_json) if arguments_json else {}
+
+        # Permission check — use first argument value as primary_arg
+        primary_arg = str(next(iter(args.values()), ""))
+        try:
+            permission_check(name, primary_arg)
+        except PermissionDenied as e:
+            return f"Error: {e}"
+
         result = _TOOLS[name]["fn"](**args)
         return str(result)
     except json.JSONDecodeError as e:
