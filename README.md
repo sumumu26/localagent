@@ -7,7 +7,19 @@
 GGUFモデルをローカルで直接実行し、ツールを使いながら回答するCLIエージェント。  
 フレームワーク不使用のシンプルなReActループ実装。
 
-![demo](demo.png)
+```text
+Loading model: ~/models/Qwen3.5-9B-Q4_K_M.gguf
+Model loaded. Type exit or Ctrl-C to quit.
+
+Session: sessions/20260411_120000.md
+
+You: 2026年のゴールデンウィークの日程を教えて
+
+  ▶ web_search({"query": "2026年 ゴールデンウィーク 日程"})
+  ✓ 1823 chars
+
+Assistant: 2026年のゴールデンウィークは4月29日（水）〜5月6日（水）の8日間です。
+```
 
 ## 名前の由来
 
