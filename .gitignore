@@ -12,6 +12,9 @@ env/
 *.safetensors
 models/
 
+# Sessions
+sessions/
+
 # Env
 .env
 
