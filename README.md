@@ -42,9 +42,10 @@ hakobune（箱舟）は、ノアの箱舟に由来します。外部のLLMに依
 ## 特徴
 
 - **完全ローカル** — llama-cpp-pythonでGGUFモデルを直接読み込み、外部サーバー不要
-- **ツール呼び出し対応** — Web検索・ファイル検索・ファイル読み込みを標準装備
+- **ツール呼び出し対応** — Web検索・ファイル操作・Python実行を標準装備
+- **権限管理** — Claude Code互換の `settings.json` でツールのallow/denyを制御
 - **拡張しやすい** — ツールの追加は1ファイル + 1行のimportだけ
-- **依存最小** — `llama-cpp-python` / `ddgs` / `rich` の3つのみ
+- **依存最小** — `llama-cpp-python` / `ddgs` / `rich` / `prompt_toolkit` の4つのみ
 
 ## 必要環境
 
@@ -83,6 +84,7 @@ python main.py --model /path/to/model.gguf
 | `--max-tokens` | `1024` | 1回の応答の最大トークン数 |
 | `--max-iterations` | `10` | ReActループの最大反復数 |
 | `--system-prompt` | — | システムプロンプトの上書き |
+| `--settings` | `settings.json` | 権限設定ファイルのパス（存在しない場合は全許可） |
 | `--verbose` | off | llama-cpp-python の詳細ログを表示 |
 
 ### 実行例
@@ -117,8 +119,12 @@ python main.py \
 | ツール | 説明 |
 |---|---|
 | `web_search` | DuckDuckGoでWeb検索。タイトル・URL・スニペットを返す |
+| `web_fetch` | URLを直接フェッチしてテキストを返す。HTMLはプレーンテキストに変換。デフォルト32KB、最大4MB（`max_bytes`で指定） |
 | `file_glob` | globパターンでファイルを検索（`**/*.py` など再帰対応） |
 | `file_read` | ファイルを読み込む。32KBでキャップ、行範囲指定（`start_line`/`end_line`）対応 |
+| `file_write` | ファイルにテキストを書き込む。存在しない親ディレクトリも自動作成 |
+| `file_search` | ファイル内容をキーワード・正規表現で横断検索（grep相当）。`filepath:行番号: 内容` 形式で返す |
+| `python_exec` | Pythonコードをサブプロセスで実行して出力を返す。デフォルトタイムアウト30秒 |
 
 ## ツールの追加方法
 
@@ -151,6 +157,54 @@ from agent.tools import my_tool
 
 以上で完了。レジストリが自動的にLLMへのスキーマ提供と実行ディスパッチを担います。
 
+## 権限管理
+
+Claude Code の `settings.json` と互換のフォーマットでツールの実行を制御できます。
+
+```bash
+cp settings.json.example settings.json
+# settings.json を編集して権限を設定
+python main.py --model model.gguf --settings settings.json
+```
+
+### settings.json の構造
+
+```json
+{
+  "permissions": {
+    "allow": ["ツール名(パターン)", ...],
+    "deny":  ["ツール名(パターン)", ...]
+  }
+}
+```
+
+- **deny が優先** — allowとdenyの両方にマッチする場合はdenyが勝つ
+- **allowが空** — すべて許可（settings.jsonがない場合も同様）
+- **パターン** — `*` はワイルドカード（`fnmatch` 形式）
+
+### 設定例
+
+```json
+{
+  "permissions": {
+    "allow": [
+      "web_search(*)",
+      "web_fetch(*)",
+      "file_read(*)",
+      "file_write(workspace/*)",
+      "python_exec(*)"
+    ],
+    "deny": [
+      "python_exec(*import subprocess*)",
+      "python_exec(*import os*)",
+      "file_write(/etc/*)"
+    ]
+  }
+}
+```
+
+パターンはツールの第1引数（`file_write` ならパス、`python_exec` ならコード内容）に対してマッチします。
+
 ## ツール呼び出しの仕組み
 
 llama-cpp-pythonのネイティブtool calling（JSON形式）ではなく、Qwen3.5が学習済みの `<tool_call>` テキスト形式を使用しています。
@@ -175,10 +229,12 @@ llama-cpp-pythonのネイティブtool calling（JSON形式）ではなく、Qwe
 hakobune/
 ├── main.py                  # CLIエントリポイント・REPLループ
 ├── config.py                # 設定dataclass + argparse
+├── settings.json.example    # 権限設定のサンプル
 ├── requirements.txt
 └── agent/
     ├── llm.py               # llama-cpp-pythonラッパー（サロゲート修正含む）
-    ├── registry.py          # ツールレジストリ（register/dispatch）
+    ├── registry.py          # ツールレジストリ（register/dispatch）+ 権限チェック
+    ├── permissions.py       # settings.json 互換の権限チェッカー
     ├── loop.py              # ReActループ本体
     ├── tool_calling/        # モデル別ツール呼び出しアダプタ
     │   ├── base.py          # 抽象基底クラス
@@ -187,8 +243,12 @@ hakobune/
     └── tools/
         ├── __init__.py      # ツール登録トリガー
         ├── web_search.py
+        ├── web_fetch.py
         ├── file_glob.py
-        └── file_read.py
+        ├── file_read.py
+        ├── file_write.py
+        ├── file_search.py
+        └── python_exec.py
 ```
 
 ## 動作確認済みモデル
