@@ -24,6 +24,7 @@ class Config:
     context_threshold: float = 0.8
     keep_recent: int = 6
     session_file: str = ""
+    resume: bool = False
     verbose: bool = False
     system_prompt: str = DEFAULT_SYSTEM_PROMPT
     settings_path: str = "settings.json"
@@ -50,6 +51,8 @@ def parse_args() -> Config:
                    help="要約せずに保持する最近のメッセージ数 (デフォルト: 6)")
     p.add_argument("--session", default="",
                    help="セッションファイルのパス (.md)。指定すると再開・自動保存が有効になる")
+    p.add_argument("--resume", action="store_true",
+                   help="保存済みセッションの一覧を表示して再開するセッションを選択する")
     p.add_argument("--verbose", action="store_true",
                    help="Enable llama-cpp-python verbose output")
     p.add_argument("--system-prompt", default=None,
@@ -69,6 +72,7 @@ def parse_args() -> Config:
         context_threshold=args.context_threshold,
         keep_recent=args.keep_recent,
         session_file=args.session,
+        resume=args.resume,
         verbose=args.verbose,
         system_prompt=args.system_prompt or DEFAULT_SYSTEM_PROMPT,
         settings_path=args.settings,

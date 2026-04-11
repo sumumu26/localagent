@@ -1,9 +1,11 @@
 import re
+from datetime import datetime
 from pathlib import Path
 
 from agent.llm import _SUMMARY_PREFIX
 
 _MARKER_RE = re.compile(r"<!-- hakobune:(\w+) -->")
+SESSIONS_DIR = "sessions"
 
 
 def save_session(messages: list, path: str) -> None:
@@ -11,6 +13,7 @@ def save_session(messages: list, path: str) -> None:
     messagesをMarkdown形式でファイルに保存する。
     元のシステムプロンプト（ツール定義を含む）は除外する。
     """
+    Path(path).parent.mkdir(parents=True, exist_ok=True)
     lines = []
     for msg in messages:
         role = msg["role"]
@@ -47,3 +50,30 @@ def load_session(path: str) -> list:
         i += 2
 
     return messages
+
+
+def new_session_path(sessions_dir: str = SESSIONS_DIR) -> str:
+    """タイムスタンプ付きの新規セッションファイルパスを返す。"""
+    Path(sessions_dir).mkdir(parents=True, exist_ok=True)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    return str(Path(sessions_dir) / f"{timestamp}.md")
+
+
+def list_sessions(sessions_dir: str = SESSIONS_DIR) -> list:
+    """sessions_dir内のセッションファイルを更新日時の新しい順で返す。"""
+    d = Path(sessions_dir)
+    if not d.exists():
+        return []
+    return sorted(d.glob("*.md"), key=lambda p: p.stat().st_mtime, reverse=True)
+
+
+def get_latest_user_message(path: str, max_chars: int = 80) -> str:
+    """セッションファイルから最新のユーザーメッセージを取得し、truncateして返す。"""
+    messages = load_session(path)
+    for msg in reversed(messages):
+        if msg["role"] == "user":
+            content = msg["content"].replace("\n", " ").strip()
+            if len(content) > max_chars:
+                return content[:max_chars] + "..."
+            return content
+    return "(メッセージなし)"

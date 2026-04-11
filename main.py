@@ -4,7 +4,11 @@ from agent.llm import load_model
 from agent.loop import run_loop
 from agent import registry, permissions
 from agent.tool_calling import get_adapter
-from agent.session import load_session, save_session
+from datetime import datetime
+from agent.session import (
+    load_session, save_session, new_session_path,
+    list_sessions, get_latest_user_message,
+)
 import agent.tools  # noqa: F401 — triggers all @register decorators
 
 try:
@@ -31,6 +35,45 @@ def _ask(prompt_str: str) -> str:
     return input(prompt_str)
 
 
+def _pick_session() -> str | None:
+    """保存済みセッションを一覧表示し、選択されたパスを返す。キャンセル時はNone。"""
+    sessions = list_sessions()
+    if not sessions:
+        if _USE_RICH:
+            _console.print("[yellow]保存済みセッションがありません。新規セッションを開始します。[/yellow]\n")
+        else:
+            print("保存済みセッションがありません。新規セッションを開始します。\n")
+        return None
+
+    if _USE_RICH:
+        _console.print("[bold]利用可能なセッション:[/bold]\n")
+    else:
+        print("利用可能なセッション:\n")
+
+    for i, path in enumerate(sessions, 1):
+        mtime = datetime.fromtimestamp(path.stat().st_mtime).strftime("%Y-%m-%d %H:%M")
+        preview = get_latest_user_message(str(path))
+        if _USE_RICH:
+            _console.print(f"  [cyan][{i}][/cyan] {mtime}  {preview}")
+        else:
+            print(f"  [{i}] {mtime}  {preview}")
+
+    print()
+    try:
+        if _USE_RICH:
+            choice = _console.input("[bold]番号を選択[/bold] (Enter で新規セッション開始): ").strip()
+        else:
+            choice = input("番号を選択 (Enter で新規セッション開始): ").strip()
+        if not choice:
+            return None
+        idx = int(choice) - 1
+        if 0 <= idx < len(sessions):
+            return str(sessions[idx])
+    except (ValueError, KeyboardInterrupt):
+        pass
+    return None
+
+
 def main() -> None:
     cfg = parse_args()
     permissions.load(cfg.settings_path)
@@ -54,14 +97,26 @@ def main() -> None:
     )
     messages = [{"role": "system", "content": system_content}]
 
-    if cfg.session_file:
-        restored = load_session(cfg.session_file)
-        if restored:
-            messages.extend(restored)
-            if _USE_RICH:
-                _console.print(f"[bold green]Session restored:[/bold green] {cfg.session_file} ({len(restored)} messages)\n")
-            else:
-                print(f"Session restored: {cfg.session_file} ({len(restored)} messages)\n")
+    # セッションファイルパスを決定
+    if cfg.resume:
+        session_path = _pick_session() or new_session_path()
+    elif cfg.session_file:
+        session_path = cfg.session_file
+    else:
+        session_path = new_session_path()
+
+    restored = load_session(session_path)
+    if restored:
+        messages.extend(restored)
+        if _USE_RICH:
+            _console.print(f"[bold green]Session restored:[/bold green] {session_path} ({len(restored)} messages)\n")
+        else:
+            print(f"Session restored: {session_path} ({len(restored)} messages)\n")
+    else:
+        if _USE_RICH:
+            _console.print(f"[dim]Session: {session_path}[/dim]\n")
+        else:
+            print(f"Session: {session_path}\n")
 
     try:
         while True:
@@ -84,8 +139,7 @@ def main() -> None:
             else:
                 print(f"\nAssistant: {response}\n")
 
-            if cfg.session_file:
-                save_session(messages, cfg.session_file)
+            save_session(messages, session_path)
 
     except KeyboardInterrupt:
         print("\nExiting.")

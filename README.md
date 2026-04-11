@@ -86,7 +86,8 @@ python main.py --model /path/to/model.gguf
 | `--max-iterations` | `10` | ReActループの最大反復数 |
 | `--context-threshold` | `0.8` | コンテキスト圧縮を開始するトークン使用率（0.0〜1.0） |
 | `--keep-recent` | `6` | 要約せずに保持する最近のメッセージ数 |
-| `--session` | — | セッションファイルのパス（.md）。指定すると再開・自動保存が有効になる |
+| `--session` | — | セッションファイルのパスを明示指定（.md） |
+| `--resume` | off | 保存済みセッションを一覧表示して再開するセッションを選択する |
 | `--system-prompt` | — | システムプロンプトの上書き |
 | `--settings` | `settings.json` | 権限設定ファイルのパス（存在しない場合は全許可） |
 | `--verbose` | off | llama-cpp-python の詳細ログを表示 |
@@ -111,11 +112,12 @@ python main.py \
   --model ~/models/Qwen3.5-9B-Q4_K_M.gguf \
   --n-gpu-layers 0
 
-# セッション保存・再開
+# セッション再開（一覧から選択）
 python main.py \
   --model ~/models/Qwen3.5-9B-Q4_K_M.gguf \
-  --session mywork.md
-# 次回同じファイルを指定すると前回の会話から再開
+  --resume
+# → 保存済みセッションの一覧が表示され、番号を選択して再開
+# デフォルトでは sessions/YYYYMMDD_HHMMSS.md に自動保存される
 ```
 
 > **モデル別の注意点**
@@ -246,7 +248,7 @@ hakobune/
     ├── registry.py          # ツールレジストリ（register/dispatch）+ 権限チェック
     ├── permissions.py       # settings.json 互換の権限チェッカー
     ├── loop.py              # ReActループ本体
-    ├── session.py           # セッション保存・復元（Markdown形式）
+    ├── session.py           # セッション保存・復元・一覧取得（Markdown形式）
     ├── tool_calling/        # モデル別ツール呼び出しアダプタ
     │   ├── base.py          # 抽象基底クラス
     │   ├── qwen.py          # Qwen3.5用 <tool_call> 形式
