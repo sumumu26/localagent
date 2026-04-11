@@ -26,6 +26,7 @@ class Config:
     session_file: str = ""
     resume: bool = False
     verbose: bool = False
+    verbose_tools: bool = False
     system_prompt: str = DEFAULT_SYSTEM_PROMPT
     settings_path: str = "settings.json"
 
@@ -55,6 +56,8 @@ def parse_args() -> Config:
                    help="保存済みセッションの一覧を表示して再開するセッションを選択する")
     p.add_argument("--verbose", action="store_true",
                    help="Enable llama-cpp-python verbose output")
+    p.add_argument("--verbose-tools", action="store_true",
+                   help="ツール呼び出しをパネル形式で詳細表示する（デフォルトは1行表示）")
     p.add_argument("--system-prompt", default=None,
                    help="Override the default system prompt")
     p.add_argument("--settings", default="settings.json",
@@ -74,6 +77,7 @@ def parse_args() -> Config:
         session_file=args.session,
         resume=args.resume,
         verbose=args.verbose,
+        verbose_tools=args.verbose_tools,
         system_prompt=args.system_prompt or DEFAULT_SYSTEM_PROMPT,
         settings_path=args.settings,
     )

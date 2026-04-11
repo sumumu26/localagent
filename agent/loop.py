@@ -44,9 +44,9 @@ def run_loop(llm, messages: list, cfg: Config) -> str:
             args = tc.get("arguments", {})
             args_json = json.dumps(args, ensure_ascii=False)
 
-            _print_tool_call(name, args_json)
+            _print_tool_call(name, args_json, cfg.verbose_tools)
             result = registry.dispatch(name, args_json)
-            _print_tool_result(name, result)
+            _print_tool_result(name, result, cfg.verbose_tools)
 
             results.append(adapter.format_tool_result(name, result))
 
@@ -70,33 +70,45 @@ def _strip_thinking(text: str) -> str:
     return text.strip()
 
 
-def _print_tool_call(name: str, args_json: str) -> None:
+def _print_tool_call(name: str, args_json: str, verbose: bool = False) -> None:
     try:
         args = json.loads(args_json)
         args_str = json.dumps(args, ensure_ascii=False)
     except Exception:
         args_str = args_json
 
-    if _USE_RICH:
-        _console.print(Panel(
-            f"[bold]{name}[/bold]({args_str})",
-            title="[cyan]Tool Call[/cyan]",
-            border_style="cyan",
-            expand=False,
-        ))
+    if verbose:
+        if _USE_RICH:
+            _console.print(Panel(
+                f"[bold]{name}[/bold]({args_str})",
+                title="[cyan]Tool Call[/cyan]",
+                border_style="cyan",
+                expand=False,
+            ))
+        else:
+            print(f"\n[Tool Call: {name}({args_str})]")
     else:
-        print(f"\n[Tool Call: {name}({args_str})]")
+        brief = args_str if len(args_str) <= 80 else args_str[:77] + "..."
+        if _USE_RICH:
+            _console.print(f"  [cyan]▶[/cyan] {name}({brief})")
+        else:
+            print(f"  > {name}({brief})")
 
 
-def _print_tool_result(name: str, result: str) -> None:
-    preview = result[:300] + "..." if len(result) > 300 else result
-
-    if _USE_RICH:
-        _console.print(Panel(
-            preview,
-            title=f"[green]Result: {name}[/green]",
-            border_style="green",
-            expand=False,
-        ))
+def _print_tool_result(name: str, result: str, verbose: bool = False) -> None:
+    if verbose:
+        preview = result[:300] + "..." if len(result) > 300 else result
+        if _USE_RICH:
+            _console.print(Panel(
+                preview,
+                title=f"[green]Result: {name}[/green]",
+                border_style="green",
+                expand=False,
+            ))
+        else:
+            print(f"[Tool Result: {preview}]\n")
     else:
-        print(f"[Tool Result: {preview}]\n")
+        if _USE_RICH:
+            _console.print(f"  [green]✓[/green] {len(result)} chars")
+        else:
+            print(f"  ✓ {len(result)} chars")
