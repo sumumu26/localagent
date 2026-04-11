@@ -1,5 +1,9 @@
 # hakobune
 
+<p align="center">
+  <img src="logo.svg" alt="hakobune logo" width="600"/>
+</p>
+
 GGUFモデルをローカルで直接実行し、ツールを使いながら回答するCLIエージェント。  
 フレームワーク不使用のシンプルなReActループ実装。
 

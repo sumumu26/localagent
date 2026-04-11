@@ -1,0 +1,47 @@
+<svg width="600" height="160" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="600" height="160" rx="12" fill="#0d1117"/>
+  <rect x="0.5" y="0.5" width="599" height="159" rx="11.5" fill="none" stroke="#21262d" stroke-width="1"/>
+
+  <!-- Water waves -->
+  <path d="M 40 122 Q 57 113 74 122 Q 91 131 108 122 Q 125 113 142 122 Q 155 129 162 124"
+        stroke="#1f6feb" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.85"/>
+
+  <!-- Hull (barge shape, wider at base) -->
+  <path d="M 43 120 L 51 82 L 139 82 L 147 120 Z" fill="#238636"/>
+
+  <!-- Hull planks -->
+  <line x1="52" y1="95" x2="138" y2="95" stroke="#0d1117" stroke-width="1.2" opacity="0.35"/>
+  <line x1="50" y1="108" x2="140" y2="108" stroke="#0d1117" stroke-width="1.2" opacity="0.35"/>
+
+  <!-- Cabin -->
+  <rect x="67" y="56" width="56" height="28" rx="2" fill="#3fb950"/>
+
+  <!-- Roof (triangle) -->
+  <polygon points="61,56 95,34 129,56" fill="#2ea043"/>
+
+  <!-- Porthole -->
+  <circle cx="95" cy="70" r="8" fill="#0d1117" opacity="0.45"/>
+  <circle cx="95" cy="70" r="6" fill="none" stroke="#58a65c" stroke-width="1.5"/>
+
+  <!-- Mast & flag -->
+  <line x1="95" y1="34" x2="95" y2="16" stroke="#8b949e" stroke-width="1.5"/>
+  <polygon points="95,16 112,22 95,29" fill="#e6edf3" opacity="0.6"/>
+
+  <!-- Title -->
+  <text x="180" y="97"
+        font-family="'Courier New', Courier, monospace"
+        font-size="52"
+        font-weight="bold"
+        fill="#e6edf3"
+        letter-spacing="-1">hakobune</text>
+
+  <!-- Cursor -->
+  <rect x="473" y="70" width="10" height="34" rx="1" fill="#3fb950" opacity="0.85"/>
+
+  <!-- Subtitle -->
+  <text x="182" y="126"
+        font-family="'Courier New', Courier, monospace"
+        font-size="15"
+        fill="#8b949e">箱舟  ·  local LLM agent</text>
+</svg>
