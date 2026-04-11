@@ -51,6 +51,38 @@ def _configure_windows_encoding() -> None:
     os.system("chcp 65001 >nul 2>&1")
 
 
+def _print_last_exchange(history: list) -> None:
+    """セッション復元時に最後のユーザー入力とアシスタントの返答を表示する。"""
+    last_user = last_assistant = None
+    for msg in reversed(history):
+        if msg["role"] == "assistant" and last_assistant is None:
+            last_assistant = msg["content"]
+        elif msg["role"] == "user" and last_user is None:
+            last_user = msg["content"]
+        if last_user and last_assistant:
+            break
+
+    if not last_user and not last_assistant:
+        return
+
+    if _USE_RICH:
+        from rich.rule import Rule
+        _console.print(Rule("[dim]前回の会話[/dim]", style="dim"))
+        if last_user:
+            _console.print(f"[bold blue]You:[/bold blue] {last_user}")
+        if last_assistant:
+            _console.print(f"[bold green]Assistant:[/bold green] {last_assistant}")
+        _console.print(Rule(style="dim"))
+        _console.print()
+    else:
+        print("--- 前回の会話 ---")
+        if last_user:
+            print(f"You: {last_user}")
+        if last_assistant:
+            print(f"Assistant: {last_assistant}")
+        print("------------------\n")
+
+
 def _pick_session() -> str | None:
     """保存済みセッションを一覧表示し、選択されたパスを返す。キャンセル時はNone。"""
     sessions = list_sessions()
@@ -134,6 +166,7 @@ def main() -> None:
             _console.print(f"[bold green]Session restored:[/bold green] {session_path} ({len(history)} messages)\n")
         else:
             print(f"Session restored: {session_path} ({len(history)} messages)\n")
+        _print_last_exchange(history)
     else:
         if _USE_RICH:
             _console.print(f"[dim]Session: {session_path}[/dim]\n")
