@@ -52,6 +52,7 @@ hakobune（箱舟）は、ノアの箱舟に由来します。外部のLLMに依
 
 - Python 3.10+
 - ツール呼び出し対応のGGUFモデル（推奨: Qwen3.5-9B-Instruct Q4_K_M）
+- Windows / Linux / macOS 対応
 
 ## セットアップ
 
@@ -62,10 +63,20 @@ pip install -r requirements.txt
 GPU（CUDA）を使う場合は llama-cpp-python のビルド済みCUDAホイールをインストール：
 
 ```bash
-# CUDA 12.4 ビルド済みホイール（CUDA 12.x ドライバーで動作）
+# Linux: CUDA 12.4 ビルド済みホイール（CUDA 12.x ドライバーで動作）
 pip install "https://github.com/abetlen/llama-cpp-python/releases/download/v0.3.20-cu124/llama_cpp_python-0.3.20-py3-none-linux_x86_64.whl"
 pip install -r requirements.txt
+
+# Windows: CUDA 12.4 ビルド済みホイール
+pip install "https://github.com/abetlen/llama-cpp-python/releases/download/v0.3.20-cu124/llama_cpp_python-0.3.20-py3-none-win_amd64.whl"
+pip install -r requirements.txt
 ```
+
+### Windows での注意点
+
+- Python 3.10+ と [Visual C++ 再頒布可能パッケージ](https://aka.ms/vs/17/release/vc_redist.x64.exe) が必要
+- `shell` ツールは `cmd.exe` を使用。`git` など必要なコマンドを PATH に通しておく
+- 日本語の入出力は UTF-8 で自動設定される（起動時に `chcp 65001` を実行）
 
 ## 使い方
 

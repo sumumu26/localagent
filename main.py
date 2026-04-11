@@ -1,4 +1,5 @@
 import sys
+import os
 from config import parse_args
 from agent.llm import load_model
 from agent.loop import run_loop
@@ -33,6 +34,21 @@ def _ask(prompt_str: str) -> str:
         from rich.prompt import Prompt
         return Prompt.ask(f"[bold blue]{prompt_str.rstrip()}[/bold blue]")
     return input(prompt_str)
+
+
+def _configure_windows_encoding() -> None:
+    """Windows環境でUTF-8入出力を有効にする。"""
+    if sys.platform != "win32":
+        return
+    # Python 3.15未満ではUTF-8モードが自動でないため明示的に設定
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    if hasattr(sys.stderr, "reconfigure"):
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    if hasattr(sys.stdin, "reconfigure"):
+        sys.stdin.reconfigure(encoding="utf-8", errors="replace")
+    # cmd.exe のコードページをUTF-8に切り替え
+    os.system("chcp 65001 >nul 2>&1")
 
 
 def _pick_session() -> str | None:
@@ -75,6 +91,7 @@ def _pick_session() -> str | None:
 
 
 def main() -> None:
+    _configure_windows_encoding()
     cfg = parse_args()
     permissions.load(cfg.settings_path)
 
