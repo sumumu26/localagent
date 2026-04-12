@@ -128,12 +128,6 @@ python main.py \
   --n-ctx 8192 \
   --n-gpu-layers -1
 
-# Gemma 4 26B-A4B Q4_K_M
-python main.py \
-  --model ~/models/gemma-4-26B-A4B-it-UD-Q4_K_M.gguf \
-  --chat-format gemma \
-  --system-prompt "You are a helpful assistant. For ANY question about facts, people, games, or news, ALWAYS use web_search first. Never answer from memory."
-
 # CPUのみ
 python main.py \
   --model ~/models/Qwen3.5-9B-Q4_K_M.gguf \
@@ -147,9 +141,7 @@ python main.py \
 # デフォルトでは sessions/YYYYMMDD_HHMMSS.md に自動保存される
 ```
 
-> **モデル別の注意点**
-> - **Qwen3.5**: thinking mode を持つためデフォルトのシステムプロンプトに `/no_think` を付与。`--chat-format chatml`（デフォルト）で動作。
-> - **Gemma 4**: `/no_think` は不要。`--chat-format gemma` を指定し、`--system-prompt` でシステムプロンプトを上書きする。
+> **Qwen3.5 の注意点**: thinking mode を持つためデフォルトのシステムプロンプトに `/no_think` を付与。`--chat-format chatml`（デフォルト）で動作。
 
 起動後はターミナルで対話できます。`exit` または Ctrl-C で終了。
 
@@ -262,7 +254,7 @@ llama-cpp-pythonのネイティブtool calling（JSON形式）ではなく、Qwe
 </tool_response>
 ```
 
-ツール定義はシステムプロンプトに埋め込まれるため、`chatml` / `gemma` どちらのフォーマットでも確実に動作します。モデルの出力フォーマットはアダプタが吸収します。
+ツール定義はシステムプロンプトに埋め込まれます。モデルの出力フォーマットはアダプタが吸収します。
 
 ## プロジェクト構成
 
@@ -280,8 +272,7 @@ arko/
     ├── session.py           # セッション保存・復元・一覧取得（Markdown形式、全履歴保持）
     ├── tool_calling/        # モデル別ツール呼び出しアダプタ
     │   ├── base.py          # 抽象基底クラス
-    │   ├── qwen.py          # Qwen3.5用 <tool_call> 形式
-    │   └── gemma.py         # Gemma 4用 <|tool_call|> 形式
+    │   └── qwen.py          # Qwen3.5用 <tool_call> 形式
     └── tools/
         ├── __init__.py      # ツール登録トリガー
         ├── web_search.py
@@ -302,8 +293,6 @@ tool callingに対応したモデルであれば動作します。
 | モデル | GGUF配布元 | 備考 |
 |---|---|---|
 | **Qwen3.5-9B Q4_K_M** | [unsloth/Qwen3.5-9B-GGUF](https://huggingface.co/unsloth/Qwen3.5-9B-GGUF) | `chatml` / VRAM 約8GB |
-| Qwen3.5-4B Q4_K_M | [unsloth/Qwen3.5-4B-GGUF](https://huggingface.co/unsloth/Qwen3.5-4B-GGUF) | `chatml` / VRAM 約4GB |
-| **Gemma 4 26B-A4B Q4_K_M** | [unsloth/gemma-4-26B-A4B-it-GGUF](https://huggingface.co/unsloth/gemma-4-26B-A4B-it-GGUF) | `gemma` / VRAM 約16GB |
 
 ## ライセンス
 
