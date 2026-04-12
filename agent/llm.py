@@ -124,11 +124,52 @@ def maybe_compress_context(llm: Llama, messages: list, cfg: Config) -> None:
         print("[Context] 要約完了。会話を継続します。")
 
 
+_MAX_CONTINUATIONS = 10
+
+
 def chat_completion(llm: Llama, messages: list, tools: list, cfg: Config) -> dict:
-    return llm.create_chat_completion(
+    response = llm.create_chat_completion(
         messages=_sanitize_messages(messages),
         tools=tools if tools else None,
         tool_choice="auto",
         temperature=cfg.temperature,
         max_tokens=cfg.max_tokens,
     )
+
+    choice = response["choices"][0]
+    if choice.get("finish_reason") == "length":
+        partial = choice["message"].get("content") or ""
+        full_content = _continue_truncated(llm, messages, partial, cfg)
+        response["choices"][0]["message"]["content"] = full_content
+        response["choices"][0]["finish_reason"] = "stop"
+
+    return response
+
+
+def _continue_truncated(llm: Llama, original_messages: list, partial: str, cfg: Config) -> str:
+    """
+    finish_reason == 'length' で打ち切られた応答を継続する。
+    打ち切られた内容をアシスタントメッセージとして渡し、続きを生成させる。
+    """
+    content = partial
+    for i in range(_MAX_CONTINUATIONS):
+        if _USE_RICH:
+            _console.print(f"[yellow][Continue] 生成が途中で打ち切られました。継続中... ({i + 1}/{_MAX_CONTINUATIONS})[/yellow]")
+        else:
+            print(f"[Continue] 生成が途中で打ち切られました。継続中... ({i + 1}/{_MAX_CONTINUATIONS})")
+
+        cont_messages = list(original_messages) + [
+            {"role": "assistant", "content": content},
+            {"role": "user", "content": "Continue your response from exactly where it was cut off. Output only the continuation, no repetition."},
+        ]
+        response = llm.create_chat_completion(
+            messages=_sanitize_messages(cont_messages),
+            temperature=cfg.temperature,
+            max_tokens=cfg.max_tokens,
+        )
+        choice = response["choices"][0]
+        content += choice["message"].get("content") or ""
+        if choice.get("finish_reason") != "length":
+            break
+
+    return content
