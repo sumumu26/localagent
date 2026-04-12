@@ -72,7 +72,7 @@ def web_fetch(url: str, max_bytes: int = DEFAULT_FETCH_BYTES) -> str:
     try:
         req = urllib.request.Request(
             url,
-            headers={"User-Agent": "Mozilla/5.0 (compatible; hakobune-agent/1.0)"},
+            headers={"User-Agent": "Mozilla/5.0 (compatible; arko-agent/1.0)"},
         )
         with urllib.request.urlopen(req, timeout=30) as resp:
             content_type = resp.headers.get_content_type() or ""

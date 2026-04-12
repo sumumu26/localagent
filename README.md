@@ -1,9 +1,10 @@
-# hakobune
+# arko
 
 <p align="center">
-  <img src="logo.svg" alt="hakobune logo" width="600"/>
+  <img src="logo.svg" alt="arko logo" width="600"/>
 </p>
 
+A portable local LLM agent.  
 GGUFモデルをローカルで直接実行し、ツールを使いながら回答するCLIエージェント。  
 フレームワーク不使用のシンプルなReActループ実装。
 
@@ -23,13 +24,15 @@ Assistant: 2026年のゴールデンウィークは4月29日（水）〜5月6日
 
 ## 名前の由来
 
-hakobune（箱舟）は、ノアの箱舟に由来します。外部のLLMに依存せず、ローカルLLMだけで完結するエージェントを手元に持ち運べる——どこでも自律して動けるポータブルなエージェントを作りたい、という思いから名付けました。
+arko（アークオー）は、英語の "ark"（方舟・箱舟）から派生した造語で、**A portable local LLM agent** を意味します。
+
+「ハコブネ（箱舟）」という別プロジェクトがあり、arko はそのハコブネに乗って運ばれるエージェントをイメージしています。ハコブネが arko を載せて航行し、複数のエージェントが協力して働く——そんなビジョンを込めた名前です。外部のLLMに依存せず、どこへでも持ち運べるポータブルなローカルLLMエージェントです。
 
 ## これは何か・なぜ使うのか
 
 ### 他の選択肢との違い
 
-| | hakobune | LangChain / LangGraph | Ollama + OpenAI SDK |
+| | arko | LangChain / LangGraph | Ollama + OpenAI SDK |
 |---|---|---|---|
 | サーバー起動 | **不要**（プロセス内で直接実行） | 不要 | Ollamaサーバーが必要 |
 | 依存ライブラリ | **3つのみ** | 数十〜数百 | openai + ollama |
@@ -264,7 +267,7 @@ llama-cpp-pythonのネイティブtool calling（JSON形式）ではなく、Qwe
 ## プロジェクト構成
 
 ```
-hakobune/
+arko/
 ├── main.py                  # CLIエントリポイント・REPLループ
 ├── config.py                # 設定dataclass + argparse
 ├── settings.json.example    # 権限設定のサンプル
