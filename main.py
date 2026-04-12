@@ -3,7 +3,7 @@ import os
 from config import parse_args
 from agent.llm import load_model
 from agent.loop import run_loop
-from agent import registry, permissions
+from agent import registry, permissions, mcp as mcp_client
 from agent.tool_calling import get_adapter
 from datetime import datetime
 from agent.session import (
@@ -126,6 +126,7 @@ def main() -> None:
     _configure_windows_encoding()
     cfg = parse_args()
     permissions.load(cfg.settings_path)
+    mcp_client.load_mcp_servers(cfg.settings_path)
 
     if _USE_RICH:
         _console.print(f"[bold]Loading model:[/bold] {cfg.model_path}")
@@ -204,6 +205,7 @@ def main() -> None:
     except KeyboardInterrupt:
         print("\nExiting.")
     finally:
+        mcp_client.close_all()
         del llm
 
 
