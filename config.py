@@ -29,6 +29,8 @@ class Config:
     verbose_tools: bool = False
     system_prompt: str = DEFAULT_SYSTEM_PROMPT
     settings_path: str = "settings.json"
+    kv_cache_type_k: str = "f16"
+    kv_cache_type_v: str = "f16"
 
 
 def parse_args() -> Config:
@@ -62,6 +64,24 @@ def parse_args() -> Config:
                    help="Override the default system prompt")
     p.add_argument("--settings", default="settings.json",
                    help="Path to settings.json for permission rules (default: settings.json)")
+    p.add_argument(
+        "--kv-cache-type-k",
+        default="f16",
+        help=(
+            "KV キャッシュの K 側量子化型 (デフォルト: f16)。"
+            "選択肢: f16, q8_0, q4_0, tbq4_0, tbq3_0。"
+            "TurboQuant 型は TurboQuant fork ビルドが必要。"
+        ),
+    )
+    p.add_argument(
+        "--kv-cache-type-v",
+        default="f16",
+        help=(
+            "KV キャッシュの V 側量子化型 (デフォルト: f16)。"
+            "選択肢: f16, q8_0, q4_0, tbq4_0, tbq3_0。"
+            "TurboQuant 型は TurboQuant fork ビルドが必要。"
+        ),
+    )
     args = p.parse_args()
 
     return Config(
@@ -80,4 +100,6 @@ def parse_args() -> Config:
         verbose_tools=args.verbose_tools,
         system_prompt=args.system_prompt or DEFAULT_SYSTEM_PROMPT,
         settings_path=args.settings,
+        kv_cache_type_k=args.kv_cache_type_k,
+        kv_cache_type_v=args.kv_cache_type_v,
     )
