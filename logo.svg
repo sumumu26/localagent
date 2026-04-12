@@ -24,6 +24,26 @@
   <circle cx="95" cy="70" r="8" fill="#0d1117" opacity="0.45"/>
   <circle cx="95" cy="70" r="6" fill="none" stroke="#58a65c" stroke-width="1.5"/>
 
+  <!-- Robot left (standing on deck, left of cabin) -->
+  <g opacity="0.92">
+    <rect x="54" y="71" width="10" height="11" rx="1.5" fill="#6e7681"/>
+    <rect x="55" y="63" width="8" height="8" rx="2" fill="#8b949e"/>
+    <line x1="59" y1="58" x2="59" y2="63" stroke="#8b949e" stroke-width="1.2"/>
+    <circle cx="59" cy="57" r="1.5" fill="#3fb950"/>
+    <rect x="56" y="65.5" width="2" height="2" rx="0.5" fill="#3fb950"/>
+    <rect x="59.5" y="65.5" width="2" height="2" rx="0.5" fill="#3fb950"/>
+  </g>
+
+  <!-- Robot right (standing on deck, right of cabin) -->
+  <g opacity="0.92">
+    <rect x="126" y="71" width="10" height="11" rx="1.5" fill="#6e7681"/>
+    <rect x="127" y="63" width="8" height="8" rx="2" fill="#8b949e"/>
+    <line x1="131" y1="58" x2="131" y2="63" stroke="#8b949e" stroke-width="1.2"/>
+    <circle cx="131" cy="57" r="1.5" fill="#3fb950"/>
+    <rect x="128" y="65.5" width="2" height="2" rx="0.5" fill="#3fb950"/>
+    <rect x="131.5" y="65.5" width="2" height="2" rx="0.5" fill="#3fb950"/>
+  </g>
+
   <!-- Mast & flag -->
   <line x1="95" y1="34" x2="95" y2="16" stroke="#8b949e" stroke-width="1.5"/>
   <polygon points="95,16 112,22 95,29" fill="#e6edf3" opacity="0.6"/>
