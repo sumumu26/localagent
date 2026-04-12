@@ -139,7 +139,7 @@ class StdioMCPClient(MCPClientBase):
         self._send_request("initialize", {
             "protocolVersion": "2024-11-05",
             "capabilities": {},
-            "clientInfo": {"name": "hakobune", "version": "0.1.0"},
+            "clientInfo": {"name": "arko", "version": "0.1.0"},
         })
         self._send_notification("notifications/initialized")
 
@@ -235,7 +235,7 @@ class HttpMCPClient(MCPClientBase):
             "params": {
                 "protocolVersion": "2024-11-05",
                 "capabilities": {},
-                "clientInfo": {"name": "hakobune", "version": "0.1.0"},
+                "clientInfo": {"name": "arko", "version": "0.1.0"},
             },
         }
         _, resp_headers = self._post(body)

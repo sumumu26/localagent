@@ -34,14 +34,14 @@
         font-size="52"
         font-weight="bold"
         fill="#e6edf3"
-        letter-spacing="-1">hakobune</text>
+        letter-spacing="-1">arko</text>
 
   <!-- Cursor -->
-  <rect x="473" y="70" width="10" height="34" rx="1" fill="#3fb950" opacity="0.85"/>
+  <rect x="327" y="70" width="10" height="34" rx="1" fill="#3fb950" opacity="0.85"/>
 
   <!-- Subtitle -->
   <text x="182" y="126"
         font-family="'Courier New', Courier, monospace"
         font-size="15"
-        fill="#8b949e">箱舟  ·  local LLM agent</text>
+        fill="#8b949e">portable local LLM agent</text>
 </svg>

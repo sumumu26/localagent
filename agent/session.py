@@ -4,7 +4,7 @@ from pathlib import Path
 
 from agent.llm import _SUMMARY_PREFIX
 
-_MARKER_RE = re.compile(r"<!-- hakobune:(\w+) -->")
+_MARKER_RE = re.compile(r"<!-- arko:(\w+) -->")
 SESSIONS_DIR = "sessions"
 
 _current_session_path: str = ""
@@ -32,7 +32,7 @@ def save_session(messages: list, path: str) -> None:
         # 元のシステムプロンプト（要約でないもの）はスキップ
         if role == "system" and not content.startswith(_SUMMARY_PREFIX):
             continue
-        lines.append(f"<!-- hakobune:{role} -->")
+        lines.append(f"<!-- arko:{role} -->")
         lines.append(content)
         lines.append("")
 
