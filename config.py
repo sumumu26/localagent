@@ -19,7 +19,7 @@ class Config:
     n_ctx: int = 8192
     n_gpu_layers: int = -1
     temperature: float = 0.0
-    max_tokens: int = 1024
+    max_tokens: int = -1
     max_iterations: int = 10
     context_threshold: float = 0.8
     keep_recent: int = 6
@@ -43,7 +43,8 @@ def parse_args() -> Config:
     p.add_argument("--n-gpu-layers", type=int, default=-1,
                    help="GPU layers to offload (-1 = all)")
     p.add_argument("--temperature", type=float, default=0.0)
-    p.add_argument("--max-tokens", type=int, default=1024)
+    p.add_argument("--max-tokens", type=int, default=-1,
+                   help="出力トークン数の上限 (-1 = n_ctx に委ねる, デフォルト: -1)")
     p.add_argument("--max-iterations", type=int, default=10,
                    help="Max ReAct loop iterations before giving up")
     p.add_argument("--context-threshold", type=float, default=0.8,
